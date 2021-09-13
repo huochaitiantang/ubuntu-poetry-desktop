@@ -17,11 +17,12 @@ def simple(txt):
   return Converter('zh-hans').convert(txt)
 
 
-def random_poet(poet_dir):
+def random_poet(poet_dir, seed):
   poets = []
   for f in os.listdir(poet_dir):
     if f.startswith('poet.'):
       poets.append(f)
+  random.seed(seed)
   ind = random.randint(0, len(poets) - 1)
   is_tang = poets[ind].startswith('poet.tang')
   poets_path = poet_dir + '/' + poets[ind]
@@ -34,7 +35,6 @@ def random_poet(poet_dir):
 
   # u'strains', u'paragraphs', u'title', u'author'
   poet[u'dynasty'] = u'（唐）' if is_tang else u'（宋）'
-  print(poet['title'])
   return poet
 
 
@@ -99,32 +99,4 @@ def add_poet(img_path, poet):
     draw.text((horizont, vertical), p, (0, 0, 0), font=font)
     vertical = vertical + font_mid + GAP
 
-  new_file = ''.join(random.sample(string.ascii_letters, 8))
-  new_path = '{}/{}.jpg'.format(os.getcwd(), new_file)
-  img.save(new_path)
-  return new_path
-  
-
-def change_bg(bgdir, poetdir):
-  imgs = os.listdir(bgdir)
-  ind = random.randint(0, len(imgs) - 1)
-  img_path = '{}/{}'.format(bgdir, imgs[ind])
-  poet = random_poet(poetdir)
-  os.system('rm *.jpg')
-  new_path = add_poet(img_path, poet)
-
-  c_path = '"file://' + new_path + '"'
-  print("Background with {}...".format(c_path))
-  os.system('gsettings set org.gnome.desktop.background picture-uri ' + c_path)
-  return new_path
-
-
-def main():
-  interval = 600
-  bgdir = os.getcwd() + '/img'
-  while True:
-    change_bg(bgdir, './chinese-poetry/json')
-    time.sleep(interval)
-
-if __name__ == '__main__':
-  main()
+  return img
