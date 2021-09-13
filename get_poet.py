@@ -33,6 +33,8 @@ def random_poet(poet_dir, seed):
     ind = random.randint(0, len(poets_dict) - 1)
     poet = poets_dict[ind]
 
+  poet['author'] = simple(poet['author'])
+  poet['title'] = simple(poet['title'])
   # u'strains', u'paragraphs', u'title', u'author'
   poet[u'dynasty'] = u'（唐）' if is_tang else u'（宋）'
   return poet
@@ -42,8 +44,8 @@ def add_poet(img_path, poet):
   img = Image.open(img_path)
   draw = ImageDraw.Draw(img)
 
-  title = simple(poet['title'])
-  author = poet['dynasty'] + simple(poet['author'])
+  title = poet['title']
+  author = poet['dynasty'] + poet['author']
   para = poet['paragraphs']
   para_cnt = len(para)
   para_max = 0

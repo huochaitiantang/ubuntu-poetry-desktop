@@ -5,6 +5,7 @@ import os
 import re
 import time
 from get_poet import random_poet, add_poet
+import json
 
 
 def get_img_url(url="https://cn.bing.com/"):
@@ -56,21 +57,36 @@ def main():
     while True:
         date = time.strftime("%Y-%m-%d", time.localtime())
         second = int(time.mktime(time.strptime(date,"%Y-%m-%d")))
-        print("Date:", date, second)
 
         bing_img_path = os.path.join(img_dir, "{}.jpg".format(date))
-        poet_img_path = os.path.join(img_dir, "{}-{}.jpg".format(date, second))
+        poet_img_path = os.path.join(img_dir, "{}-poet.jpg".format(date))
+        json_path = os.path.join(img_dir, "{}.json".format(date))
 
-        if not os.path.exists(bing_img_path):
+        if  (not os.path.exists(bing_img_path)) or \
+            (not os.path.exists(poet_img_path)) or \
+            (not os.path.exists(json_path)):
+
             img_url, img_info = get_img_url()
             print("Bing img: {}, {}".format(img_url, img_info))
             save_img(img_url, bing_img_path)
 
-        if not os.path.exists(poet_img_path):
             poet = random_poet("./chinese-poetry/json", second)
-            print("Poet: {}".format(poet['title']))
             img = add_poet(bing_img_path, poet)
+            print("Poet: {}".format(poet))
             img.save(poet_img_path)
+
+            data = {
+                "date": date,
+                "second": second,
+                "create_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                "bing_img_url:": img_url,
+                "bing_img_info": img_info,
+                "poet": poet,
+                "bing_img_path": bing_img_path,
+                "poet_img_path": poet_img_path,
+            }
+            json.dump(data, open(json_path, 'w', encoding='utf-8'), ensure_ascii=False, indent=4)
+
             set_wallpaper(poet_img_path)
 
         time.sleep(1800)
