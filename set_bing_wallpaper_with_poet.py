@@ -8,26 +8,27 @@ from get_poet import random_poet, add_poet
 import json
 
 
-def get_img_url(url="https://cn.bing.com/"):
+def get_img_url(date=None):
     img_url = ""
     img_info = ""
     try:
+        cur_date = time.strftime("%Y-%m-%d", time.localtime())
+        cur_second = int(time.mktime(time.strptime(cur_date,"%Y-%m-%d")))
+        date = cur_date if date is None else date
+        second = int(time.mktime(time.strptime(date,"%Y-%m-%d")))
+        last_id = (cur_second - second) // (60 * 60 * 24)
+        url = "https://www.bing.com/HPImageArchive.aspx?format=js&idx={}&n=1&mkt=zh-CN".format(last_id)
         r = requests.get(url)
         status = r.status_code
         if status == 200:
-
-            #<a href="/th?id=OHR.VeniceBeach_ZH-CN9971532384_1920x1200.jpg&amp;rf=LaDigue_1920x1200.jpg" data-h="ID=HpApp,44580.1" class="downloadLink
-            res = re.search(r"<a href=\"\/th.*downloadLink", r.text)
-            res = res.group()
-            res = re.split(r"\"", res)[1]
-            img_url = url + res
-
-            # class="title">威尼斯海滩滑板公园鸟瞰图，洛杉矶</a><div><div class="copyright" id="copyright">
-            res = re.search(r"class=\"title\">.*id=\"copyright\">", r.text)
-            res = res.group()
-            img_info = re.split(r"[<>]", res)[1]
+            img = r.json()['images'][0]
+            if img['enddate'] != date.replace('-', ''):
+                raise Exception("Not equal date: {} vs {}".format(date, img['enddate']))
+            img_url = "https://cn.bing.com/" + img['url']
+            img_info = img['copyright']
         else:
             print("Error status code: {}!".format(status))
+
     except Exception as e:
         print("Error: {}!".format(e))
     return img_url, img_info
@@ -49,29 +50,26 @@ def set_wallpaper(img_path):
   return
 
 
-def main():
-    img_dir = "./img"
+def process_date(img_dir, date):
     if not os.path.exists(img_dir):
         os.makedirs(img_dir)
 
-    while True:
-        date = time.strftime("%Y-%m-%d", time.localtime())
-        second = int(time.mktime(time.strptime(date,"%Y-%m-%d")))
+    second = int(time.mktime(time.strptime(date,"%Y-%m-%d")))
+    bing_img_path = os.path.join(img_dir, "{}.jpg".format(date))
+    poet_img_path = os.path.join(img_dir, "{}-poet.jpg".format(date))
+    json_path = os.path.join(img_dir, "{}.json".format(date))
 
-        bing_img_path = os.path.join(img_dir, "{}.jpg".format(date))
-        poet_img_path = os.path.join(img_dir, "{}-poet.jpg".format(date))
-        json_path = os.path.join(img_dir, "{}.json".format(date))
+    if  (not os.path.exists(bing_img_path)) or \
+        (not os.path.exists(poet_img_path)) or \
+        (not os.path.exists(json_path)):
 
-        if  (not os.path.exists(bing_img_path)) or \
-            (not os.path.exists(poet_img_path)) or \
-            (not os.path.exists(json_path)):
-
-            img_url, img_info = get_img_url()
+        img_url, img_info = get_img_url(date)
+        if img_url != "":
             print("Bing img: {}, {}".format(img_url, img_info))
             save_img(img_url, bing_img_path)
 
             poet = random_poet("./chinese-poetry/json", second)
-            img = add_poet(bing_img_path, poet)
+            img = add_poet(bing_img_path, poet, img_info=img_info)
             print("Poet: {}".format(poet))
             img.save(poet_img_path)
 
@@ -89,8 +87,28 @@ def main():
 
             set_wallpaper(poet_img_path)
 
+
+def main():
+    while True:
+        date = time.strftime("%Y-%m-%d", time.localtime())
+        process_date("./img", date)
         time.sleep(1800)
 
 
+def test():
+    # only latest 7 days are valid
+    process_date("./img", "2021-09-05")
+    process_date("./img", "2021-09-06")
+    process_date("./img", "2021-09-07")
+    process_date("./img", "2021-09-08")
+    process_date("./img", "2021-09-09")
+    process_date("./img", "2021-09-10")
+    process_date("./img", "2021-09-11")
+    process_date("./img", "2021-09-12")
+    process_date("./img", "2021-09-13")
+    process_date("./img", "2021-09-14")
+
+
 if __name__ == "__main__":
+    #test()
     main()

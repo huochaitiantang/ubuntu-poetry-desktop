@@ -40,7 +40,7 @@ def random_poet(poet_dir, seed):
   return poet
 
 
-def add_poet(img_path, poet):
+def add_poet(img_path, poet, img_info=""):
   img = Image.open(img_path)
   draw = ImageDraw.Draw(img)
 
@@ -75,13 +75,17 @@ def add_poet(img_path, poet):
   while (font_big * len(title)) > W:
     font_big -= 1
 
+  fill_color = (255, 255, 255)
+  stroke_color = (0, 0, 0)
+  stroke_width = 3
+
   # Title location
   vertical = mid_h - (font_mid + GAP)*(para_cnt + 2)/2
   horizont = mid_w - font_big * len(title) / 2
 
   # Write Title
   font = ImageFont.truetype("font/simhei.ttf", font_big, encoding="utf-8")
-  draw.text((horizont, vertical), title, (0, 0, 0), font=font)
+  draw.text((horizont, vertical), title, fill=fill_color, font=font, stroke_fill=stroke_color, stroke_width=stroke_width)
 
   # Author location
   vertical = vertical + font_big + GAP
@@ -89,8 +93,8 @@ def add_poet(img_path, poet):
 
   # Write Author
   font = ImageFont.truetype("font/simhei.ttf", font_sml, encoding="utf-8")
-  draw.text((horizont, vertical), author, (0, 0, 0), font=font)
-  
+  draw.text((horizont, vertical), author, fill=fill_color, font=font, stroke_fill=stroke_color, stroke_width=stroke_width)
+
   # Para location
   vertical = vertical + font_sml + GAP
   horizont = mid_w - font_mid * para_max / 2 + font_mid
@@ -98,7 +102,18 @@ def add_poet(img_path, poet):
   # Write Paragraphs
   font = ImageFont.truetype("font/simhei.ttf", font_mid, encoding="utf-8")
   for p in para:
-    draw.text((horizont, vertical), p, (0, 0, 0), font=font)
+    draw.text((horizont, vertical), p, fill=fill_color, font=font, stroke_fill=stroke_color, stroke_width=stroke_width)
     vertical = vertical + font_mid + GAP
+
+  # write the img info
+  if img_info != "":
+    idx = img_info.find('(')
+    if idx >= 1:
+      img_name = img_info[:idx-1]
+      img_author = img_info[idx:]
+      w, h = img.size
+      font = ImageFont.truetype("font/simhei.ttf", 20, encoding="utf-8")
+      draw.text((w - (21 * len(img_name) + 20), h - 50), img_name, fill=fill_color, font=font, stroke_fill=stroke_color, stroke_width=1)
+      #draw.text((w - (21 * len(img_name) + 20), h - 25), img_author, fill=fill_color, font=font, stroke_fill=stroke_color, stroke_width=1)
 
   return img
