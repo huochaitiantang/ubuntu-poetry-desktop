@@ -40,6 +40,23 @@ def random_poet(poet_dir, seed):
   return poet
 
 
+def random_tang300_poet(poet_dir, seed):
+  random.seed(seed)
+  is_tang = True
+  poets_path = poet_dir + '/唐诗三百首.json'
+
+  with open(poets_path) as f:
+    poets_dict = json.load(f)
+    ind = random.randint(0, len(poets_dict) - 1)
+    poet = poets_dict[ind]
+
+  poet['author'] = simple(poet['author'])
+  poet['title'] = simple(poet['title'])
+  # u'strains', u'paragraphs', u'title', u'author'
+  poet[u'dynasty'] = u'（唐）' if is_tang else u'（宋）'
+  return poet
+
+
 def add_poet(img_path, poet, img_info=""):
   img = Image.open(img_path)
   draw = ImageDraw.Draw(img)

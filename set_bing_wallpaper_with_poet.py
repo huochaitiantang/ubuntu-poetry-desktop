@@ -4,7 +4,7 @@ import requests
 import os
 import re
 import time
-from get_poet import random_poet, add_poet
+from get_poet import random_poet, add_poet, random_tang300_poet
 import json
 
 
@@ -68,7 +68,8 @@ def process_date(img_dir, date):
             print("Bing img: {}, {}".format(img_url, img_info))
             save_img(img_url, bing_img_path)
 
-            poet = random_poet("./chinese-poetry/json", second)
+            # poet = random_poet("./chinese-poetry/json", second)
+            poet = random_tang300_poet("./chinese-poetry/json", second)
             img = add_poet(bing_img_path, poet, img_info=img_info)
             print("Poet: {}".format(poet))
             img.save(poet_img_path)
